@@ -1,0 +1,49 @@
+name: Build and Push Images
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # -------------------------------
+      # FRONTEND IMAGE
+      # -------------------------------
+      - name: Build frontend image
+        run: |
+          docker build -t ghcr.io/${{ github.repository_owner }}/frontend:latest ./trizone/frontend
+
+      - name: Push frontend image
+        run: |
+          docker push ghcr.io/${{ github.repository_owner }}/frontend:latest
+
+      # -------------------------------
+      # API IMAGE
+      # -------------------------------
+      - name: Build api image
+        run: |
+          docker build -t ghcr.io/${{ github.repository_owner }}/api:latest ./trizone/api
+
+      - name: Push api image
+        run: |
+          docker push ghcr.io/${{ github.repository_owner }}/api:latest
+
+
